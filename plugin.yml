@@ -1,1 +1,23 @@
 
+name: SkyOreDP
+main: JuzeXmod\StarWars
+author: JUZEXMOD
+version: 1.0.0
+api: 3.0.0-ALPHA12
+
+commands:
+    swdp:
+        usage: /swdp <leave-make>
+        description: StarWars-Commands
+    lang:
+        usage: /lang <ar>
+        description: StarWARS-English-Arabic
+    sorank:
+        usage: /sorank
+        description: SkyRank-Commands
+    sostart:
+        usage: /swdpstart
+        description: SkyOreDP-Force start
+    money:
+        usage: /money
+        description: Set-Money-Win
