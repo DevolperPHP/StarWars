@@ -220,97 +220,8 @@ class StarWars extends PluginBase implements Listener {
             $slots->save();
         }
     }
-  
-  
-<?php
-namespace JuzeXmod\SkyOreDP;
-use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\PluginTask;
-use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\event\player\PlayerLoginEvent;
-use pocketmine\command\CommandSender;
-use pocketmine\command\Command;
-use pocketmine\utils\TextFormat as TE;
-use pocketmine\utils\Config;
-use pocketmine\level\Position;
-use pocketmine\Player;
-use pocketmine\tile\Sign;
-use pocketmine\level\Level;
-use pocketmine\item\Item;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\event\player\PlayerDeathEvent;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\tile\Chest;
-use pocketmine\inventory\ChestInventory;
-use onebone\economyapi\EconomyAPI;
-use pocketmine\event\player\PlayerQuitEvent;
-use JuzeXmod\SkyOreDP\ResetMap;
-use pocketmine\entity\Effect;
-class SkyOreDP extends PluginBase implements Listener {
-    public $prefix = TE::YELLOW . "[" . TE::AQUA . TE::RED . "Sky" . TE::AQUA . "OreDP" . TE::RESET . TE::YELLOW . "]";
-    public $mode = 0;
-    public $arenas = array();
-    public $currentLevel = "";
-    public function onEnable()
-    {
-        $this->getLogger()->info("$this->prefix SkyOre By JUZEXMOD");
-        $this->getServer()->getPluginManager()->registerEvents($this ,$this);
-        $this->economy = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
-        if(!empty($this->economy))
-        {
-            $this->api = EconomyAPI::getInstance();
-        }
-        @mkdir($this->getDataFolder());
-        $config2 = new Config($this->getDataFolder() . "/rank.yml", Config::YAML);
-        $config2->save();
-        $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
-        if($config->get("money")==null)
-        {
-            $config->set("money",500);
-        }
-        if($config->get("arenas")!=null)
-        {
-            $this->arenas = $config->get("arenas");
-        }
-        foreach($this->arenas as $lev)
-        {
-            $this->getServer()->loadLevel($lev);
-        }
-        $items = array(array(1,0,30),array(1,0,20),array(3,0,15),array(3,0,25),array(4,0,35),array(4,0,15),array(260,0,5),array(261,0,1),array(262,0,6),array(267,0,1),array(268,0,1),array(272,0,1),array(276,0,1),array(283,0,1),array(297,0,3),array(298,0,1),array(299,0,1),array(300,0,1),array(301,0,1),array(303,0,1),array(304,0,1),array(310,0,1),array(313,0,1),array(314,0,1),array(315,0,1),array(316,0,1),array(317,0,1),array(320,0,4),array(354,0,1),array(364,0,4),array(366,0,5),array(391,0,5));
-        if($config->get("chestitems")==null)
-        {
-            $config->set("chestitems",$items);
-        }
-        $config->save();
-        $playerlang = new Config($this->getDataFolder() . "/languages.yml", Config::YAML);
-        $playerlang->save();
-        $lang = new Config($this->getDataFolder() . "/lang.yml", Config::YAML);
-        if($lang->get("en")==null)
-        {
-            $messages = array();
-            $messages["kill"] = "was killed by";
-            $messages["cannotjoin"] = "You can't join.";
-            $messages["seconds"] = "seconds to start";
-            $messages["won"] = "§fWon SkyWars in arena: §b";
-            $messages["deathmatchminutes"] = "minutes to DeathMatch!";
-            $messages["deathmatchseconds"] = "seconds to DeathMatch!";
-            $messages["chestrefill"] = "The chest have been refilled!";
-            $messages["remainingminutes"] = "minutes remaining!";
-            $messages["remainingseconds"] = "seconds remaining!";
-            $messages["nowinner"] = "§fNo winner in arena: §b";
-            $messages["moreplayers"] = "Wait Players joiin";
-            $lang->set("en",$messages);
-        }
-        $lang->save();
-        $slots = new Config($this->getDataFolder() . "/slots.yml", Config::YAML);
-        $slots->save();
-        $this->getServer()->getScheduler()->scheduleRepeatingTask(new GameSender($this), 20);
-        $this->getServer()->getScheduler()->scheduleRepeatingTask(new RefreshSigns($this), 10);
-    }
+}
+        $
     public function onDeath(PlayerDeathEvent $event){
         $jugador = $event->getEntity();
         $map = $jugador->getLevel()->getFolderName();
@@ -493,7 +404,7 @@ class SkyOreDP extends PluginBase implements Listener {
             $this->getServer()->loadLevel($lev);
         }
         $items = array(array(1,0,30),array(1,0,20),array(3,0,15),array(3,0,25),array(4,0,35),array(4,0,15),array(260,0,5),array(261,0,1),array(262,0,6),array(267,0,1),array(268,0,1),array(272,0,1),array(276,0,1),array(283,0,1),array(297,0,3),array(298,0,1),array(299,0,1),array(300,0,1),array(301,0,1),array(303,0,1),array(304,0,1),array(310,0,1),array(313,0,1),array(314,0,1),array(315,0,1),array(316,0,1),array(317,0,1),array(320,0,4),array(354,0,1),array(364,0,4),array(366,0,5),array(391,0,5));
-        if($config->get("chestitems")==null)
+        if($config->get(ll"chestitems")==null)
         {
             $config->set("chestitems",$items);
         }
