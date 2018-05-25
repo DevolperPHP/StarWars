@@ -336,4 +336,152 @@ class StarWars extends PluginBase implements Listener {
                 return true;
         }
     }
+  
+  public function onInteract(PlayerInteractEvent $event)
+    {
+        $player = $event->getPlayer();
+        $block = $event->getBlock();
+        $tile = $player->getLevel()->getTile($block);
+        if($tile instanceof Sign)
+        {
+            if($this->mode==26)
+            {
+                $tile->setText(TE::AQUA . "§l§a[Join]",TE::YELLOW  . "0 / 12","§6" . $this->currentLevel,$this->prefix);
+                $this->refreshArenas();
+                $this->currentLevel = "";
+                $this->mode = 0;
+                $player->sendMessage($this->prefix . "Arena Registered!");
+            }
+            else
+            {
+                $text = $tile->getText();
+                if($text[3] == $this->prefix)
+                {
+                    if($text[0]==TE::AQUA . "§a[Join]")
+                    {
+                        $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+                        $slots = new Config($this->getDataFolder() . "/slots.yml", Config::YAML);
+                        $namemap = str_replace("§6", "", $text[2]);
+                        $level = $this->getServer()->getLevelByName($namemap);
+                        if($slots->get("slot1".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn1");
+                            $slots->set("slot1".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot2".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn2");
+                            $slots->set("slot2".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot3".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn3");
+                            $slots->set("slot3".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot4".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn4");
+                            $slots->set("slot4".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot5".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn5");
+                            $slots->set("slot5".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot6".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn6");
+                            $slots->set("slot6".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot7".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn7");
+                            $slots->set("slot7".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot8".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn8");
+                            $slots->set("slot8".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot9".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn9");
+                            $slots->set("slot9".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot10".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn10");
+                            $slots->set("slot10".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot11".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn11");
+                            $slots->set("slot11".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        else if($slots->get("slot12".$namemap)==null)
+                        {
+                            $thespawn = $config->get($namemap . "Spawn12");
+                            $slots->set("slot12".$namemap, $player->getName());
+                            $slots->save();
+                        }
+                        $player->sendMessage($this->prefix . "You entered in SkyOreDP");
+                        foreach($level->getPlayers() as $playersinarena)
+                        {
+                            $playersinarena->sendMessage($this->prefix . $player->getName() . " has joined the game");
+                        }
+                        $spawn = new Position($thespawn[0]+0.5,$thespawn[1],$thespawn[2]+0.5,$level);
+                        $level->loadChunk($spawn->getFloorX(), $spawn->getFloorZ());
+                        $player->teleport($spawn,0,0);
+                        $player->getInventory()->clearAll();
+                        $player->removeAllEffects();
+                        $player->setHealth(20);
+                        $player->setFood(20);
+                        $player->getInventory()->addItem(Item::get(256, 0, 1));
+                        $player->getInventory()->addItem(Item::get(257, 0, 1));
+                        $player->getInventory()->addItem(Item::get(258, 0, 1));
+                        $this->setkit($player);
+                    }
+                    else
+                    {
+                        $playerlang = new Config($this->getDataFolder() . "/languages.yml", Config::YAML);
+                        $lang = new Config($this->getDataFolder() . "/lang.yml", Config::YAML);
+                        $toUse = $lang->get($playerlang->get($player->getName()));
+                        $player->sendMessage($this->prefix . $toUse["cannotjoin"]);
+                    }
+                }
+            }
+        }
+        else if($this->mode>=1&&$this->mode<=11)
+        {
+            $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+            $config->set($this->currentLevel . "Spawn" . $this->mode, array($block->getX(),$block->getY()+1,$block->getZ()));
+            $player->sendMessage($this->prefix . "Spawn " . $this->mode . " has been registered!");
+            $this->mode++;
+            $config->save();
+        }
+        else if($this->mode==12)
+        {
+            $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+            $config->set($this->currentLevel . "Spawn" . $this->mode, array($block->getX(),$block->getY()+1,$block->getZ()));
+            $player->sendMessage($this->prefix . "Spawn " . $this->mode . " has been registered!");
+            $config->set("arenas",$this->arenas);
+            $player->sendMessage($this->prefix . "Touch Sign to register Arena!");
+            $spawn = $this->getServer()->getDefaultLevel()->getSafeSpawn();
+            $this->getServer()->getDefaultLevel()->loadChunk($spawn->getFloorX(), $spawn->getFloorZ());
+            $player->teleport($spawn,0,0);
+            $config->save();
+            $this->mode=26;
+        }
+    }
 }
