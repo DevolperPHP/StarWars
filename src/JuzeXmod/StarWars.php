@@ -482,4 +482,45 @@ class StarWars extends PluginBase implements Listener {
             $this->mode=26;
         }
     }
+  
+   public function refreshArenas()
+    {
+        $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+        $config->set("arenas",$this->arenas);
+        foreach($this->arenas as $arena)
+        {
+            $config->set($arena . "PlayTime", 780);
+            $config->set($arena . "StartTime", 90);
+        }
+        $config->save();
+    }
+  
+  public function zipper($player, $name)
+    {
+        $path = realpath($player->getServer()->getDataPath() . 'worlds/' . $name);
+        $zip = new \ZipArchive;
+        @mkdir($this->getDataFolder() . 'arenas/', 0755);
+        $zip->open($this->getDataFolder() . 'arenas/' . $name . '.zip', $zip::CREATE | $zip::OVERWRITE);
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
+        foreach ($files as $datos) {
+            if (!$datos->isDir()) {
+                $relativePath = $name . '/' . substr($datos, strlen($path) + 1);
+                $zip->addFile($datos, $relativePath);
+            }
+        }
+        $zip->close();
+        $player->getServer()->loadLevel($name);
+        unset($zip, $path, $files);
+    }
 }
+
+class RefreshSigns extends PluginTask {
+    public $prefix = TE::YELLOW . "[" . TE::AQUA . TE::RED . "Sky" . TE::AQUA . "OreDP" . TE::RESET . TE::YELLOW . "]";
+    public function __construct($plugin)
+    {
+        $this->plugin = $plugin;
+        parent::__construct($plugin);
+    }
