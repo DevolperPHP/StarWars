@@ -33,7 +33,7 @@ use pocketmine\tile\Chest;
 use pocketmine\inventory\ChestInventory;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\event\player\PlayerQuitEvent;
-use JuzeXmod\StarWars\ResetMap;
+use JuzeXmod\ResetMap;
 use pocketmine\entity\Effect;
 
 class StarWars extends PluginBase implements Listener {
