@@ -222,49 +222,118 @@ class StarWars extends PluginBase implements Listener {
     }
   
   public function onBlockBreak(BlockBreakEvent $event)
-                switch (mt_rand(1,8)){
-                    case 1:
-                        $event->setDrops(array(Item::get(265, 0, 0)));
-                        $player->getInventory()->addItem(Item::get(257, 0, 1));
-                        break;
-                    case 2:
-                        $event->setDrops(array(Item::get(265, 0, 0)));
-                        $player->getInventory()->addItem(Item::get(306, 0, 1));
-                        break;
-                    case 3:
-                        $event->setDrops(array(Item::get(265, 0, 0)));
-                        $player->getInventory()->addItem(Item::get(307, 0, 1));
-                        break;
-                    case 4:
-                    case 8:
-                        $event->setDrops(array(Item::get(266, 0, 0)));
-                        $player->getInventory()->addItem(Item::get(46, 0, 3));
-                        break;
-                    case 9:
-                        $event->setDrops(array(Item::get(266, 0, 0)));
-                        $player->getInventory()->addItem(Item::get(50, 0, 1));
-                        break;
-                    case 10:
-                        $event->setDrops(array(Item::get(266, 0, 0)));
-                        $player->getInventory()->addItem(Item::get(56, 0, 1));
+    {
+        $player = $event->getPlayer();
+        $level = $player->getLevel()->getFolderName();
+        $block = $event->getBlock()->getId();
+        if(in_array($level,$this->arenas))
+        {
+            $event->setCancelled(true);
+        }
+  }
+  
+  public function onBlockPlace(BlockPlaceEvent $event)
+    {
+        $player = $event->getPlayer();
+        $level = $player->getLevel()->getFolderName();
+        if(in_array($level,$this->arenas))
+        {
+            $event->setCancelled(true);
+        }
+    }
+  
+  public function onDamage(EntityDamageEvent $event)
+    {
+        if($event instanceof EntityDamageByEntityEvent)
+        {
+            $player = $event->getEntity();
+            $damager = $event->getDamager();
+            if($player instanceof Player)
+            {
+                if($damager instanceof Player)
+                {
+                    $level = $player->getLevel()->getFolderName();
+                    $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+                    if($config->get($level . "PlayTime") != null)
+                    {
+                        if($config->get($level . "PlayTime") > 750)
+                        {
+                            $event->setCancelled(true);
+                        }
+                    }
                 }
             }
-            if($block == 73){
-                switch (mt_rand(1,10)){
-                    case 1:
-                        $event->setDrops(array(Item::get(331, 0, 0)));
-                        $player->setHealth(1);
-                        $player->sendMessage("$this->prefix Ops");
-                        break;
-                    case 2:
-                        $event->setDrops(array(Item::get(331, 0, 0)));
-                        $player->setHealth(25);
-                        $player->sendMessage("$this->prefix Nice heath");
-                        break;
-                    case 3:
-                        $event->setDrops(array(Item::get(331, 0, 0)));
-                        $player->getInventory()->addItem(Item::get(69, 0, 1));
-                        break;
-                    case
-                        $event->setDrops(array(Item::get(331, 0, 0)));
+        }
+    }
+  
+  public function onCommand(CommandSender $player, Command $cmd, $label, array $args) {
+        $lang = new Config($this->getDataFolder() . "/lang.yml", Config::YAML);
+        switch($cmd->getName()){
+            case "swdp":
+                if($player->isOp())
+                {
+                    if(!empty($args[0]))
+                    {
+                        if($args[0]=="addarena")
+                        {
+                            if(!empty($args[1]))
+                            {
+                                if(file_exists($this->getServer()->getDataPath() . "/worlds/" . $args[1]))
+                                {
+                                    $this->getServer()->loadLevel($args[1]);
+                                    $this->getServer()->getLevelByName($args[1])->loadChunk($this->getServer()->getLevelByName($args[1])->getSafeSpawn()->getFloorX(), $this->getServer()->getLevelByName($args[1])->getSafeSpawn()->getFloorZ());
+                                    array_push($this->arenas,$args[1]);
+                                    $this->currentLevel = $args[1];
+                                    $this->mode = 1;
+                                    $player->sendMessage($this->prefix . "§l§aTouch the spawn points!");
+                                    $player->setGamemode(1);
+                                    $player->teleport($this->getServer()->getLevelByName($args[1])->getSafeSpawn(),0,0);
+                                    $name = $args[1];
+                                    $this->zipper($player, $name);
+                                }
+                                else
+                                {
+                                    $player->sendMessage($this->prefix . "§l§b$args[1] §c Not World.");
+                                }
+                            }
+                            else
+                            {
+                                $player->sendMessage($this->prefix . "§l§cERROR missing parameters.");
+                            }
+                        }
+                        else
+                        {
+                            $player->sendMessage($this->prefix . "§l§cThis not command.");
+                        }
+                    }
+                    else
+                    {
+                        $player->sendMessage($this->prefix . "§l§aSkyOreDP Commands!");
+                        $player->sendMessage($this->prefix . "§l§6/sodp addarena [world]: Create a so game!");
+                        $player->sendMessage($this->prefix . "§l§6/ranksw [rank] [player]: ranks(so many)!");
+                        $player->sendMessage($this->prefix . "§l§6/sostart: start the game");
+                        $player->sendMessage($this->prefix . "§l§6/lang: Select language");
+                    }
+                }
+                else
+                {
+                }
+                return true;
+            
+            case "swdpstart":
+                if($player->isOp())
+                {
+                    $player->sendMessage("§aStarting in 10 sec...");
+                    $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+                    $config->set("arenas",$this->arenas);
+                    foreach($this->arenas as $arena)
+                    {
+                        $config->set($arena . "PlayTime", 780);
+                        $config->set($arena . "StartTime", 10);
+                    }
+                    $config->save();
+                }
+                return true;
+        }
+    }
 }
