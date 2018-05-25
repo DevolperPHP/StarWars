@@ -266,7 +266,7 @@ class StarWars extends PluginBase implements Listener {
         }
     }
   
-  public function onCommand(CommandSender $player, Command $cmd, $label, array $args) {
+public function onCommand(CommandSender $player, Command $cmd, $label, array $args) {
         $lang = new Config($this->getDataFolder() . "/lang.yml", Config::YAML);
         switch($cmd->getName()){
             case "swdp":
@@ -308,16 +308,33 @@ class StarWars extends PluginBase implements Listener {
                     }
                     else
                     {
-                        $player->sendMessage($this->prefix . "§l§aSkyOreDP Commands!");
-                        $player->sendMessage($this->prefix . "§l§6/sodp addarena [world]: Create a so game!");
-                        $player->sendMessage($this->prefix . "§l§6/swdptart: start the game");
+                        $player->sendMessage($this->prefix . "§l§aStarWars Commands!");
+                        $player->sendMessage($this->prefix . "§l§6/swdp addarena [world]: Create a so game!");
+                        $player->sendMessage($this->prefix . "§l§6/ranksw [rank] [player]: ranks(so many)!");
+                        $player->sendMessage($this->prefix . "§l§6/swdpstart: start the game");
+                        $player->sendMessage($this->prefix . "§l§6/lang: Select language");
                     }
                 }
                 else
                 {
                 }
                 return true;
-            
+            case "lang":
+                if(!empty($args[0]))
+                {
+                    if($lang->get($args[0])!=null)
+                    {
+                        $playerlang = new Config($this->getDataFolder() . "/languages.yml", Config::YAML);
+                        $playerlang->set($player->getName(),$args[0]);
+                        $playerlang->save();
+                        $player->sendMessage(TE::GREEN . "Languages " . $args[0]);
+                    }
+                    else
+                    {
+                        $player->sendMessage(TE::RED . "Languages not found");
+                    }
+                }
+                return true;
             case "swdpstart":
                 if($player->isOp())
                 {
@@ -330,6 +347,55 @@ class StarWars extends PluginBase implements Listener {
                         $config->set($arena . "StartTime", 10);
                     }
                     $config->save();
+                }
+                return true;
+            case "sorank":
+                if($player->isOp())
+                {
+                    if(!empty($args[0]))
+                    {
+                        if(!empty($args[1]))
+                        {
+                            $rank = "";
+                            if($args[0]=="vip")
+                            {
+                                $rank = "Vip";
+                            }
+                            elseif ($args[0]=="Pro"){
+                                $rank = "Pro";
+                            }
+                            elseif ($args[0]=="player"){
+                                $rank = "Player";
+                            }
+                            elseif ($args[0]=="mvp+"){
+                                $rank = "MVP+";
+                            }
+                            elseif ($args[0]=="King"){
+                                $rank = "King";
+                            }
+                            else
+                            {
+                                goto end;
+                            }
+                            $config = new Config($this->getDataFolder() . "/rank.yml", Config::YAML);
+                            $config->set($args[1],$rank);
+                            $config->save();
+                            $player->sendMessage(TE::AQUA.$args[1].T::GREEN." Rank Complate ".T::YELLOW.$rank);
+                            end:
+                        }
+                    }
+                }
+                return true;
+            case "money":
+                if($player->isOp())
+                {
+                    if(!empty($args[0]))
+                    {
+                        $config = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+                        $config->set("money",$args[0]);
+                        $config->save();
+                        $player->sendMessage(TE::GREEN."So money : ".TE::AQUA.$args[0]);
+                    }
                 }
                 return true;
         }
@@ -790,5 +856,31 @@ class GameSender extends PluginTask {
             }
         }
         $config->save();
+  }
+  
+  public function refillChests(Level $level)
+    {
+        $config = new Config($this->plugin->getDataFolder() . "/config.yml", Config::YAML);
+        $tiles = $level->getTiles();
+        foreach($tiles as $t) {
+            if($t instanceof Chest)
+            {
+                $chest = $t;
+                $chest->getInventory()->clearAll();
+                if($chest->getInventory() instanceof ChestInventory)
+                {
+                    for($i=0;$i<=26;$i++)
+                    {
+                        $rand = rand(1,3);
+                        if($rand==1)
+                        {
+                            $k = array_rand($config->get("chestitems"));
+                            $v = $config->get("chestitems")[$k];
+                            $chest->getInventory()->setItem($i, Item::get($v[0],$v[1],$v[2]));
+                        }
+                    }
+                }
+            }
+        }
     }
 }
