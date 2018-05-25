@@ -310,9 +310,7 @@ class StarWars extends PluginBase implements Listener {
                     {
                         $player->sendMessage($this->prefix . "§l§aSkyOreDP Commands!");
                         $player->sendMessage($this->prefix . "§l§6/sodp addarena [world]: Create a so game!");
-                        $player->sendMessage($this->prefix . "§l§6/ranksw [rank] [player]: ranks(so many)!");
-                        $player->sendMessage($this->prefix . "§l§6/sostart: start the game");
-                        $player->sendMessage($this->prefix . "§l§6/lang: Select language");
+                        $player->sendMessage($this->prefix . "§l§6/swdptart: start the game");
                     }
                 }
                 else
@@ -346,7 +344,7 @@ class StarWars extends PluginBase implements Listener {
         {
             if($this->mode==26)
             {
-                $tile->setText(TE::AQUA . "§l§a[Join]",TE::YELLOW  . "0 / 12","§6" . $this->currentLevel,$this->prefix);
+                $tile->setText(TE::AQUA . "§l§a[Join]",TE::AQUA  . "0 / 12","§6" . $this->currentLevel,$this->prefix);
                 $this->refreshArenas();
                 $this->currentLevel = "";
                 $this->mode = 0;
