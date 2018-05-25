@@ -518,9 +518,277 @@ class StarWars extends PluginBase implements Listener {
 }
 
 class RefreshSigns extends PluginTask {
-    public $prefix = TE::YELLOW . "[" . TE::AQUA . TE::RED . "Sky" . TE::AQUA . "OreDP" . TE::RESET . TE::YELLOW . "]";
+    public $prefix = TE::GREEN . "[" . TE::AQUA . TE::RED . "Star" . TE::AQUA . "Wars" . TE::RESET . TE::YELLOW . "]";
     public function __construct($plugin)
     {
         $this->plugin = $plugin;
         parent::__construct($plugin);
     }
+  
+  public function onRun($tick)
+    {
+        $allplayers = $this->plugin->getServer()->getOnlinePlayers();
+        $level = $this->plugin->getServer()->getDefaultLevel();
+        $tiles = $level->getTiles();
+        foreach($tiles as $t) {
+            if($t instanceof Sign) {
+                $text = $t->getText();
+                if($text[3]==$this->prefix)
+                {
+                    $aop = 0;
+                    $namemap = str_replace("§6", "", $text[2]);
+                    foreach($allplayers as $player){if($player->getLevel()->getFolderName()==$namemap){$aop=$aop+1;}}
+                    $ingame = TE::AQUA . "§l§a[Join]";
+                    $config = new Config($this->plugin->getDataFolder() . "/config.yml", Config::YAML);
+                    if($config->get($namemap . "PlayTime")!=780)
+                    {
+                        $ingame = TE::DARK_PURPLE . "[Game is started]";
+                    }
+                    else if($aop>=12)
+                    {
+                        $ingame = TE::GOLD . "[Game is full]";
+                    }
+                    $t->setText($ingame,TE::YELLOW  . $aop . " / 12",$text[2],$this->prefix);
+                }
+            }
+        }
+    }
+}
+
+class GameSender extends PluginTask {
+    public $prefix = TE::GREEN . "[" . TE::AQUA . TE::RED . "Star" . TE::AQUA . "Wars" . TE::RESET . TE::YELLOW . "]";
+    public function __construct($plugin)
+    {
+        $this->plugin = $plugin;
+        parent::__construct($plugin);
+    }
+    public function getResetmap() {
+        Return new ResetMap($this);
+    }
+  
+  public function onRun($tick)
+    {
+        $config = new Config($this->plugin->getDataFolder() . "/config.yml", Config::YAML);
+        $arenas = $config->get("arenas");
+        $money = $config->get("money");
+        if(!empty($arenas))
+        {
+            foreach($arenas as $arena)
+            {
+                $time = $config->get($arena . "PlayTime");
+                $timeToStart = $config->get($arena . "StartTime");
+                $levelArena = $this->plugin->getServer()->getLevelByName($arena);
+                if($levelArena instanceof Level)
+                {
+                    $playersArena = $levelArena->getPlayers();
+                    if(count($playersArena)==0)
+                    {
+                        $config->set($arena . "PlayTime", 780);
+                        $config->set($arena . "StartTime", 90);
+                    }
+                    else
+                    {
+                        if(count($playersArena)>=2)
+                        {
+                            if($timeToStart>0)
+                            {
+                                $timeToStart--;
+                                foreach($playersArena as $pl)
+                                {
+                                    $playerlang = new Config($this->plugin->getDataFolder() . "/languages.yml", Config::YAML);
+                                    $lang = new Config($this->plugin->getDataFolder() . "/lang.yml", Config::YAML);
+                                    $toUse = $lang->get($playerlang->get($pl->getName()));
+                                    $pl->sendTip(TE::GREEN . $timeToStart . " " . $toUse["seconds"]);
+                                }
+                                if($timeToStart==89)
+                                {
+                                    $levelArena->setTime(7000);
+                                    $levelArena->stopTime();
+                                }
+                                if($timeToStart<=0)
+                                {
+                                    $this->refillChests($levelArena);
+                                }
+                                $config->set($arena . "StartTime", $timeToStart);
+                            }
+                            else
+                            {
+                                $aop = count($levelArena->getPlayers());
+                                if($aop==1)
+                                {
+                                    foreach($playersArena as $pl)
+                                    {
+                                        foreach($this->plugin->getServer()->getOnlinePlayers() as $plpl)
+                                        {
+                                            $playerlang = new Config($this->plugin->getDataFolder() . "/languages.yml", Config::YAML);
+                                            $lang = new Config($this->plugin->getDataFolder() . "/lang.yml", Config::YAML);
+                                            $toUse = $lang->get($playerlang->get($plpl->getName()));
+                                            $plpl->sendMessage($this->prefix.$pl->getNameTag()." ".$toUse["win"].$arena);
+                                        }
+                                        $pl->getInventory()->clearAll();
+                                        $pl->removeAllEffects();
+                                        $pl->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
+                                        $pl->setHealth(20);
+                                        $pl->setFood(20);
+                                        $pl->setNameTag($pl->getName());
+                                        if(!empty($this->plugin->api))
+                                        {
+                                            $this->plugin->api->addMoney($pl,$money);
+                                        }
+                                        $this->getResetmap()->reload($levelArena);
+                                        $slots = new Config($this->plugin->getDataFolder() . "/slots.yml", Config::YAML);
+                                        $slots->set("slot1".$arena, 0);
+                                        $slots->set("slot2".$arena, 0);
+                                        $slots->set("slot3".$arena, 0);
+                                        $slots->set("slot4".$arena, 0);
+                                        $slots->set("slot5".$arena, 0);
+                                        $slots->set("slot6".$arena, 0);
+                                        $slots->set("slot7".$arena, 0);
+                                        $slots->set("slot8".$arena, 0);
+                                        $slots->set("slot9".$arena, 0);
+                                        $slots->set("slot10".$arena, 0);
+                                        $slots->set("slot11".$arena, 0);
+                                        $slots->set("slot12".$arena, 0);
+                                        $slots->save();
+                                    }
+                                    $config->set($arena . "PlayTime", 780);
+                                    $config->set($arena . "StartTime", 90);
+                                }
+                                if(($aop>=2))
+                                {
+                                    foreach($playersArena as $pl)
+                                    {
+                                        $pl->sendTip("§l§6" . $aop . " §bPlayers remaining");
+                                    }
+                                }
+                                $time--;
+                                if($time == 750)
+                                {
+                                    $this->refillChests($levelArena);
+                                }
+                                if($time>=300)
+                                {
+                                    $time2 = $time - 180;
+                                    $minutes = $time2 / 60;
+                                }
+                                else
+                                {
+                                    $minutes = $time / 60;
+                                    if(is_int($minutes) && $minutes>0)
+                                    {
+                                        foreach($playersArena as $pl)
+                                        {
+                                            $playerlang = new Config($this->plugin->getDataFolder() . "/languages.yml", Config::YAML);
+                                            $lang = new Config($this->plugin->getDataFolder() . "/lang.yml", Config::YAML);
+                                            $toUse = $lang->get($playerlang->get($pl->getName()));
+                                            $pl->sendMessage($this->prefix . $minutes . " " . $toUse["remainingminutes"]);
+                                        }
+                                    }
+                                    else if($time == 30 || $time == 15 || $time == 10 || $time ==5 || $time ==4 || $time ==3 || $time ==2 || $time ==1)
+                                    {
+                                        foreach($playersArena as $pl)
+                                        {
+                                            $playerlang = new Config($this->plugin->getDataFolder() . "/languages.yml", Config::YAML);
+                                            $lang = new Config($this->plugin->getDataFolder() . "/lang.yml", Config::YAML);
+                                            $toUse = $lang->get($playerlang->get($pl->getName()));
+                                            $pl->sendMessage($this->prefix . $time . " " . $toUse["remainingseconds"]);
+                                        }
+                                    }
+                                    if($time <= 0)
+                                    {
+                                        foreach($playersArena as $pl)
+                                        {
+                                            $pl->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
+                                            $playerlang = new Config($this->plugin->getDataFolder() . "/languages.yml", Config::YAML);
+                                            $lang = new Config($this->plugin->getDataFolder() . "/lang.yml", Config::YAML);
+                                            $toUse = $lang->get($playerlang->get($pl->getName()));
+                                            $pl->sendMessage($this->prefix . $toUse["nowinner"].$arena);
+                                            $pl->getInventory()->clearAll();
+                                            $pl->removeAllEffects();
+                                            $pl->setFood(20);
+                                            $pl->setHealth(20);
+                                            $pl->setNameTag($pl->getName());
+                                            $this->getResetmap()->reload($levelArena);
+                                            $slots = new Config($this->plugin->getDataFolder() . "/slots.yml", Config::YAML);
+                                            $slots->set("slot1".$arena, 0);
+                                            $slots->set("slot2".$arena, 0);
+                                            $slots->set("slot3".$arena, 0);
+                                            $slots->set("slot4".$arena, 0);
+                                            $slots->set("slot5".$arena, 0);
+                                            $slots->set("slot6".$arena, 0);
+                                            $slots->set("slot7".$arena, 0);
+                                            $slots->set("slot8".$arena, 0);
+                                            $slots->set("slot9".$arena, 0);
+                                            $slots->set("slot10".$arena, 0);
+                                            $slots->set("slot11".$arena, 0);
+                                            $slots->set("slot12".$arena, 0);
+                                            $slots->save();
+                                        }
+                                        $time = 780;
+                                    }
+                                }
+                                $config->set($arena . "PlayTime", $time);
+                            }
+                        }
+                        else
+                        {
+                            if($timeToStart<=0)
+                            {
+                                foreach($playersArena as $pl)
+                                {
+                                    foreach($this->plugin->getServer()->getOnlinePlayers() as $plpl)
+                                    {
+                                        $playerlang = new Config($this->plugin->getDataFolder() . "/languages.yml", Config::YAML);
+                                        $lang = new Config($this->plugin->getDataFolder() . "/lang.yml", Config::YAML);
+                                        $toUse = $lang->get($playerlang->get($plpl->getName()));
+                                        $plpl->sendMessage($this->prefix.$pl->getNameTag()." ".$toUse["win"].$arena);
+                                    }
+                                    $pl->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
+                                    $pl->getInventory()->clearAll();
+                                    $pl->removeAllEffects();
+                                    $pl->setHealth(20);
+                                    $pl->setFood(20);
+                                    $pl->setNameTag($pl->getName());
+                                    if(!empty($this->plugin->api))
+                                    {
+                                        $this->plugin->api->addMoney($pl,$money);
+                                    }
+                                    $this->getResetmap()->reload($levelArena);
+                                    $slots = new Config($this->plugin->getDataFolder() . "/slots.yml", Config::YAML);
+                                    $slots->set("slot1".$arena, 0);
+                                    $slots->set("slot2".$arena, 0);
+                                    $slots->set("slot3".$arena, 0);
+                                    $slots->set("slot4".$arena, 0);
+                                    $slots->set("slot5".$arena, 0);
+                                    $slots->set("slot6".$arena, 0);
+                                    $slots->set("slot7".$arena, 0);
+                                    $slots->set("slot8".$arena, 0);
+                                    $slots->set("slot9".$arena, 0);
+                                    $slots->set("slot10".$arena, 0);
+                                    $slots->set("slot11".$arena, 0);
+                                    $slots->set("slot12".$arena, 0);
+                                    $slots->save();
+                                }
+                                $config->set($arena . "PlayTime", 780);
+                                $config->set($arena . "StartTime", 90);
+                            }
+                            else
+                            {
+                                foreach($playersArena as $pl)
+                                {
+                                    $playerlang = new Config($this->plugin->getDataFolder() . "/languages.yml", Config::YAML);
+                                    $lang = new Config($this->plugin->getDataFolder() . "/lang.yml", Config::YAML);
+                                    $toUse = $lang->get($playerlang->get($pl->getName()));
+                                    $pl->sendTip(TE::DARK_AQUA . $toUse["moreplayers"]);
+                                }
+                                $config->set($arena . "PlayTime", 780);
+                                $config->set($arena . "StartTime", 90);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $config->save();
+    }
+}
